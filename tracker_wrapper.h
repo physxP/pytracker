@@ -5,6 +5,11 @@
 #ifndef TRACKER_TRACKER_WRAPPER_H
 #define TRACKER_TRACKER_WRAPPER_H
 #include "tracker/tracker.hpp"
+#include "tracker/utils.hpp"
+#include "tracker/descriptor.hpp"
+#include "tracker/distance.hpp"
+#include "tracker/logging.hpp"
+
 #include <boost/python.hpp>
 #include <boost/python/numpy.hpp>
 namespace p = boost::python;
@@ -20,7 +25,9 @@ private:
     int frameIdx;
 
 public:
-    void update(np::ndarray xy_detections,np::ndarray confidence);
+    tracker_wrapper(float video_fps);
+    np::ndarray update(np::ndarray& xy_detections,np::ndarray& confidence,np::ndarray& video_frame);
+    tracker_wrapper(const tracker_wrapper& old);
 
 
 

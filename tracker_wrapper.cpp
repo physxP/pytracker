@@ -4,8 +4,25 @@
 
 #include "tracker_wrapper.h"
 #include "tracker/tracker.hpp"
+#include "tracker/utils.hpp"
+#include "tracker/descriptor.hpp"
+#include "tracker/distance.hpp"
+#include "tracker/logging.hpp"
 
-void tracker_wrapper::update(np::ndarray xy_detections,np::ndarray confidence){
+tracker_wrapper::tracker_wrapper(float video_fps) {
+    this->video_fps = video_fps;
+    this->frameIdx = 0;
+    this->tracker = CreatePedestrianTracker();
+}
+
+tracker_wrapper::tracker_wrapper(const tracker_wrapper& old){
+    video_fps =  old.video_fps ;
+    frameIdx = old.frameIdx;
+    detections = old.detections;
+//    tracker( std::move(old.tracker));
+}
+
+np::ndarray tracker_wrapper::update(np::ndarray& xy_detections,np::ndarray& confidence,np::ndarray& video_frame){
     int num_detections = xy_detections.shape(0);
     float* det_ptr = reinterpret_cast<float*>(xy_detections.get_data());
     float* conf_ptr = reinterpret_cast<float*>(confidence.get_data());
@@ -21,9 +38,22 @@ void tracker_wrapper::update(np::ndarray xy_detections,np::ndarray confidence){
 
 
     }
-        cv::Mat frame;
+        int rows = video_frame.shape(0);
+        int columns = video_frame.shape(1);
+
+        cv::Mat frame(rows,columns,CV_8UC3,video_frame.get_data());
         uint64_t cur_timestamp = static_cast<uint64_t>(1000.0 / video_fps * frameIdx);
         tracker->Process(frame, detections, cur_timestamp);
+        int* object_ids = new int [num_detections];
+        for (int i = 0;i<num_detections;++i){
+            object_ids[i]= detections[i].object_id;
+        }
+        p::object own;
+    ++frameIdx;
+
+    return np::from_data(object_ids, np::dtype::get_builtin<int>(),p::make_tuple(num_detections),p::make_tuple(sizeof(int)),own);
+
+
 
 
 }
