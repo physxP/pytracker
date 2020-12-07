@@ -1,0 +1,5 @@
+find_package(OpenCV REQUIRED)
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+set(CMAKE_SHARED_MODULE_PREFIX "")
+add_library(TRACKER core.hpp  descriptor.hpp  distance.cpp  distance.hpp  kuhn_munkres.cpp  kuhn_munkres.hpp  logging.hpp  tracker.cpp  tracker.hpp  utils.cpp  utils.hpp )
+target_link_libraries(TRACKER ${OpenCV_LIBS})
