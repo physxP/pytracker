@@ -27,16 +27,18 @@ np::ndarray tracker_wrapper::update(np::ndarray& xy_detections,np::ndarray& conf
     float* det_ptr = reinterpret_cast<float*>(xy_detections.get_data());
     float* conf_ptr = reinterpret_cast<float*>(confidence.get_data());
 
+    TrackedObject tmp;
+    this->detections.clear();
+
     for (int i = 0;i<num_detections;++i){
-            TrackedObject tmp;
             tmp.rect.x = det_ptr[i*4 + 0];
             tmp.rect.y = det_ptr[i*4 + 1];
             tmp.rect.width =  det_ptr[i*4 + 2] - tmp.rect.x ;
             tmp.rect.height =  det_ptr[i*4 + 3] - tmp.rect.y ;
             tmp.confidence = conf_ptr[i];
-            this->detections.emplace_back(tmp);
 
-
+            if (tmp.rect.area()>0)
+                this->detections.emplace_back(tmp);
     }
         int rows = video_frame.shape(0);
         int columns = video_frame.shape(1);
@@ -52,9 +54,6 @@ np::ndarray tracker_wrapper::update(np::ndarray& xy_detections,np::ndarray& conf
     ++frameIdx;
 
     return np::from_data(object_ids, np::dtype::get_builtin<int>(),p::make_tuple(num_detections),p::make_tuple(sizeof(int)),own);
-
-
-
 
 }
 

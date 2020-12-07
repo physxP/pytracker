@@ -28,10 +28,6 @@ public:
     tracker_wrapper(float video_fps);
     np::ndarray update(np::ndarray& xy_detections,np::ndarray& confidence,np::ndarray& video_frame);
     tracker_wrapper(const tracker_wrapper& old);
-
-
-
 };
-
 
 #endif //TRACKER_TRACKER_WRAPPER_H
