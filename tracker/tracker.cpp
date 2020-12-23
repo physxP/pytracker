@@ -19,6 +19,9 @@
 #include "descriptor.hpp"
 #include "distance.hpp"
 
+#include <opencv2/opencv.hpp>
+
+
 
 
 namespace {
@@ -80,14 +83,14 @@ std::vector<cv::Scalar> GenRandomColors(int colors_num) {
 }  // anonymous namespace
 
 TrackerParams::TrackerParams()
-    : min_track_duration(300),
-    forget_delay(30),
-    aff_thr_fast(0.6f),
+    : min_track_duration(1000),
+    forget_delay(150),
+    aff_thr_fast(0.1f),
     aff_thr_strong(0.75f),
-    shape_affinity_w(0.5f),
+    shape_affinity_w(0.1f),
     motion_affinity_w(0.2f),
     time_affinity_w(0.0f),
-    min_det_conf(0.01f),
+    min_det_conf(0.5f),
     bbox_aspect_ratios_range(0.666f, 5.0f),
     bbox_heights_range(10, 1000),
     predict(25),
@@ -198,6 +201,10 @@ PedestrianTracker::tracks() const {
 
 // Returns indexes of active tracks only.
 const std::set<size_t> &PedestrianTracker::active_track_ids() const {
+//    for (auto it = active_track_ids_.begin(); it !=
+//            active_track_ids_.end(); ++it)
+//        std::cout << ' ' << *it;
+//    std::cout<<std::endl;
     return active_track_ids_;
 }
 
@@ -246,14 +253,17 @@ void PedestrianTracker::SolveAssignmentProblem(
 
     for (size_t i = 0; i < detections.size(); i++) {
         unmatched_detections->insert(i);
+//        std::cout<<unmatched_detections->size()<<'\t'<<detections.size()<<std::endl;
     }
 
     size_t i = 0;
     for (auto id : track_ids) {
         if (res[i] < detections.size()) {
             matches->emplace(id, res[i], 1 - dissimilarity.at<float>(i, res[i]));
+//            std::cout<<matches->size()<<std::endl<<std::endl;
         } else {
             unmatched_tracks->insert(id);
+//            std::cout<<unmatched_tracks->size()<<std::endl<<std::endl;
         }
         i++;
     }
@@ -269,15 +279,18 @@ const ObjectTracks PedestrianTracker::all_tracks(bool valid_only) const {
     }
 
     for (size_t id : sorted_ids) {
+//        std::cout<<id<<std::endl;
         if (!valid_only || IsTrackValid(id)) {
             TrackedObjects filtered_objects;
             for (const auto &object : tracks().at(id).objects) {
                 filtered_objects.emplace_back(object);
                 filtered_objects.back().object_id = counter;
+//                std::cout<<'here'<<std::endl;
             }
             all_objects.emplace(counter++, filtered_objects);
         }
     }
+//    std::cout<<std::endl;
     return all_objects;
 }
 
@@ -379,6 +392,10 @@ void PedestrianTracker::UpdateLostTracks(
 void PedestrianTracker::Process(const cv::Mat &frame,
                                 const TrackedObjects &input_detections,
                                 uint64_t timestamp) {
+
+
+
+//    std::cout<<input_detections[0].rect<<'\t'<<input_detections[0].confidence<<std::endl;
     if (prev_timestamp_ != std::numeric_limits<uint64_t>::max())
         //PT_CHECK_LT(prev_timestamp_, timestamp);
 
@@ -389,9 +406,12 @@ void PedestrianTracker::Process(const cv::Mat &frame,
     }
 
     TrackedObjects detections = FilterDetections(input_detections);
+//    std::cout<<detections[0].rect<<std::endl;
     for (auto &obj : detections) {
         obj.timestamp = timestamp;
+//        std::cout<<obj.timestamp<<std::endl;
     }
+//    std::cout<<std::endl;
 
     std::vector<cv::Mat> descriptors_fast;
     ComputeFastDesciptors(frame, detections, &descriptors_fast);
@@ -449,6 +469,10 @@ void PedestrianTracker::Process(const cv::Mat &frame,
             }
         }
 
+//        std::cout<<matches.size()<<std::endl;
+//        std::cout<<unmatched_detections.size()<<std::endl;
+//        std::cout<<std::endl;
+
         AddNewTracks(frame, detections, descriptors_fast, unmatched_detections);
         UpdateLostTracks(unmatched_tracks);
 
@@ -457,6 +481,7 @@ void PedestrianTracker::Process(const cv::Mat &frame,
         }
     } else {
         AddNewTracks(frame, detections, descriptors_fast);
+
         UpdateLostTracks(active_tracks);
     }
 
@@ -465,6 +490,13 @@ void PedestrianTracker::Process(const cv::Mat &frame,
 
     tracks_dists_.clear();
     prev_timestamp_ = timestamp;
+
+////// active track print check
+//    for (auto it = active_tracks.begin(); it !=
+//            active_tracks.end(); ++it)
+//        std::cout << ' ' << *it;
+//    std::cout<<std::endl;
+//////
 }
 
 void PedestrianTracker::DropForgottenTracks() {
@@ -671,7 +703,8 @@ void PedestrianTracker::AddNewTrack(const cv::Mat &frame,
                                     const cv::Mat &descriptor_fast,
                                     const cv::Mat &descriptor_strong) {
     auto detection_with_id = detection;
-    detection_with_id.object_id = tracks_counter_;
+//    detection_with_id.object_id = tracks_counter_;
+//    std::cout<< tracks_counter_;
     tracks_.emplace(std::pair<size_t, Track>(
             tracks_counter_,
             Track({detection_with_id}, frame(detection.rect).clone(),
@@ -680,10 +713,19 @@ void PedestrianTracker::AddNewTrack(const cv::Mat &frame,
     for (size_t id : active_track_ids_) {
         tracks_dists_.emplace(std::pair<size_t, size_t>(id, tracks_counter_),
                               std::numeric_limits<float>::max());
+//        std::cout<<id<<std::endl;
     }
 
     active_track_ids_.insert(tracks_counter_);
     tracks_counter_++;
+
+// active track print check
+//    for (auto it = active_track_ids_.begin(); it !=
+//            active_track_ids_.end(); ++it)
+//        std::cout << ' ' << *it;
+//    std::cout<<std::endl;
+//
+
 }
 
 void PedestrianTracker::AppendToTrack(const cv::Mat &frame,
@@ -695,6 +737,8 @@ void PedestrianTracker::AppendToTrack(const cv::Mat &frame,
 
     auto detection_with_id = detection;
     detection_with_id.object_id = track_id;
+
+//    std::cout<< detection_with_id.object_id << std::endl;
 
     auto &cur_track = tracks_.at(track_id);
     cur_track.objects.emplace_back(detection_with_id);
@@ -789,8 +833,14 @@ TrackedObjects PedestrianTracker::TrackedDetections() const {
         auto track = tracks().at(idx);
         if (IsTrackValid(idx) && !track.lost) {
             detections.emplace_back(track.objects.back());
+//            std::cout<<idx<<std::endl;
         }
     }
+//    std::cout<<std::endl;
+//    for (int i=0;i<detections.size();i++){
+//        std::cout<< detections[i].object_id<< '\t';
+//    }
+//    std::cout<<std::endl;
     return detections;
 }
 

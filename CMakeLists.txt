@@ -21,20 +21,25 @@ set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined")
 find_package(PythonLibs 3 REQUIRED)
 
 #set(Boost_INCLUDE_DIR /home/ahmed/Downloads/boost_1_73_0)
-set(Boost_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/boost_1_73_0/)
+#set(Boost_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/boost_1_73_0/)
+set(Boost_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/boost/include)
+
 message(${Boost_INCLUDE_DIR})
 ##set(Boost_LIBRARY_DIR /home/ahmed/Downloads/boost_1_73_0/stage/lib)
-set(Boost_LIBRARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/boost_1_73_0/stage/lib)
-set(BOOST_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/boost_1_73_0)
+#set(Boost_LIBRARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/boost_1_73_0/stage/lib)
+set(Boost_LIBRARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/boost/lib)
+
+#set(BOOST_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/boost_1_73_0)
+set(BOOST_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/boost)
 
 #set()
 
 #message(${CMAKE_CURRENT_SOURCE_DIR})
-find_package(Boost 1.71.0 COMPONENTS python38 numpy38 REQUIRED)
+find_package(Boost COMPONENTS python38 numpy38 REQUIRED)
 
 #set(OpenCV_DIR ${CMAKE_CURRENT_SOURCE_DIR}/opencv_install/build)
 #set(OpenCV_INSTALL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/opencv_install)
-find_package(OpenCV REQUIRED PATHS ${CMAKE_CURRENT_SOURCE_DIR}/opencv_install)
+find_package(OpenCV REQUIRED PATHS ${CMAKE_CURRENT_SOURCE_DIR}/opencv_install_gtk)
 
 
 include_directories( ${OpenCV_INCLUDE_DIRS} ${Boost_INCLUDE_DIR} )

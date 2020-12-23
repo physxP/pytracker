@@ -21,10 +21,10 @@ np::ndarray print_np(np::ndarray& xy_detections){
 
     for (int i = 0;i<num_detections;++i){
         for (int j =0;j<4;++j) {
-            std::cout << det_ptr[i*4 + j ] << " ";
+//            std::cout << det_ptr[i*4 + j ] << " ";
 
         }
-        std::cout<<std::endl;
+//        std::cout<<std::endl;
 
     }
     return out;
