@@ -171,6 +171,7 @@ void PedestrianTracker::set_descriptor_fast(const Descriptor &val) {
     descriptor_fast_ = val;
 }
 
+
 // Descriptor strong getter.
 const PedestrianTracker::Descriptor &PedestrianTracker::descriptor_strong() const {
     return descriptor_strong_;

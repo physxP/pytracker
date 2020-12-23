@@ -63,46 +63,66 @@ np::ndarray tracker_wrapper::update(np::ndarray& xy_detections,np::ndarray& conf
 //        std::cout<<cur_timestamp<<std::endl;
 //        std::cout<<this->detections[0].rect.x<<','<<detections[0].rect.y<<','<<detections[0].rect.width<<','<<detections[0].rect.height<<std::endl;
 
-    tracker->Process(frame, this->detections, cur_timestamp);
+    tracker.Process(frame, this->detections, cur_timestamp);
 //        std::cout<< this->detections[0].object_id<<std::endl;
-    TrackedObjects dets = tracker->TrackedDetections();
+    TrackedObjects dets = tracker.TrackedDetections();
 
-    int* object_ids = new int32_t [dets.size()];
+    int* object_ids = new int32_t [(dets.size()*5)];
+
     for (int i = 0;i<dets.size();++i){
-        object_ids[i]= dets[i].object_id;
-
+        object_ids[i*5]= dets[i].object_id;
+        object_ids[i*5 + 1] = dets[i].rect.x;
+        object_ids[i*5 + 2] = dets[i].rect.y;
+        object_ids[i*5 + 3] = dets[i].rect.width + dets[i].rect.x;
+        object_ids[i*5 + 4] = dets[i].rect.height + dets[i].rect.y;
     }
-    std::cout<<dets.size()<<' ';
-    std::cout<<std::endl;
+//    std::cout<<dets.size()<<' ';
+//    std::cout<<std::endl;
     p::object own;
     ++frameIdx;
 
+
         //std::cout<<detections[0].object_id<<std::endl;
 
-    return np::from_data(object_ids, np::dtype::get_builtin<int32_t>(),p::make_tuple(dets.size()),p::make_tuple(sizeof(int32_t)),confidence);
+    return np::from_data(object_ids, np::dtype::get_builtin<int32_t>(),p::make_tuple(dets.size()*5),p::make_tuple(sizeof(int32_t)),own);
 
 }
 
 
-std::unique_ptr<PedestrianTracker> CreatePedestrianTracker() {
+PedestrianTracker CreatePedestrianTracker() {
     TrackerParams params;
 
 
 
-    std::unique_ptr<PedestrianTracker> tracker(new PedestrianTracker(params));
+    PedestrianTracker tracker(params);
+//    (PedestrianTracker(params));
 
 
 
     std::shared_ptr<IImageDescriptor> descriptor_fast =
             std::make_shared<ResizedImageDescriptor>(
                     cv::Size(16, 32), cv::InterpolationFlags::INTER_LINEAR);
+
+//    IImageDescriptor *descriptor_fast;
+//    ResizedImageDescriptor b(cv::Size(16, 32), cv::InterpolationFlags::INTER_LINEAR);
+//    descriptor_fast = &b;
+
+
     std::shared_ptr<IDescriptorDistance> distance_fast =
             std::make_shared<MatchTemplateDistance>();
 
+//    IDescriptorDistance *distance_fast;
+//    MatchTemplateDistance a;
+//    distance_fast = &a;
+
+//    tracker.set_descriptor_fast(descriptor_fast);
+//    tracker.set_distance_fast(distance_fast);
 
 
-    tracker->set_descriptor_fast(descriptor_fast);
-    tracker->set_distance_fast(distance_fast);
+
+
+    tracker.set_descriptor_fast(descriptor_fast);
+    tracker.set_distance_fast(distance_fast);
 
 
 

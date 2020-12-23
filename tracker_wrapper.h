@@ -15,11 +15,12 @@
 namespace p = boost::python;
 namespace np = boost::python::numpy;
 
-std::unique_ptr<PedestrianTracker> CreatePedestrianTracker();
+PedestrianTracker CreatePedestrianTracker();
 
 class tracker_wrapper {
 private:
-    std::unique_ptr<PedestrianTracker> tracker;
+//    std::unique_ptr<PedestrianTracker> tracker;
+    PedestrianTracker tracker;
     TrackedObjects detections;
     float video_fps;
     int frameIdx;
